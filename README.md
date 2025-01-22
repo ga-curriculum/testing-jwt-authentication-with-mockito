@@ -4,7 +4,7 @@
 |--------------------------------------------|--------|----------|----------------------|
 | Testing Django Authentication with Mockito | Lesson | 3:30     | Suresh Melvin Sigera |
 
-### Setting Up the Testing Environment (10 minutes)
+### Setting Up the Python Environment (10 minutes)
 
 Before diving into the authentication testing implementation, we need to properly configure our development environment.
 In Django development, isolating project dependencies is crucial for maintaining consistent test environments. We'll
