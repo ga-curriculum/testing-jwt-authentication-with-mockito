@@ -2,8 +2,7 @@ from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
-from rest_framework_simplejwt.tokens import RefreshToken
-from unittest.mock import patch, Mock, MagicMock
+from unittest.mock import patch, MagicMock
 
 
 class AuthTestCase(APITestCase):
