@@ -23,7 +23,7 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Understanding Mockito and Unit Testing in Django
+### Understanding Mockito and Unit Testing in Django (10 minutes)
 
 In Django applications, testing authentication and user management systems is crucial but can be complex due to external
 dependencies and security considerations. This lesson focuses on using Mockito, a powerful mocking framework, to create
@@ -31,7 +31,7 @@ isolated unit tests for authentication-related functionality.
 Let's create comprehensive tests in the `main_app/tests/mock/test_auth.py` file to ensure our authentication system
 works as expected.
 
-### The Power of Mockito in Testing
+### The Power of Mockito in Testing (10 minutes)
 
 Mockito is a mocking framework that allows us to create mock objects for our tests. When testing authentication systems,
 we often need to isolate our tests from external dependencies like databases or third-party services. Mockito helps us
@@ -53,7 +53,7 @@ from django.contrib.auth.models import User
 from unittest.mock import patch, MagicMock
 ```
 
-### Setting Up the Test Environment
+### Setting Up the Test Environment (15 minutes)
 
 The `setUp` method is crucial as it prepares our test environment before each test case:
 
@@ -81,7 +81,7 @@ predefined attributes and behaviors using `MagicMock`. This ensures each test st
 mock user has properties like `id`, `username`, and `email`, which are essential for testing authentication flows. We
 also set up verification URLs and mock tokens that will be used across different test cases.
 
-### Test User Verification Success
+### Test User Verification Success (20 minutes)
 
 The success verification test ensures that authenticated users can successfully validate their tokens:
 
@@ -117,7 +117,7 @@ This test method uses multiple patch decorators to mock various components of th
 user objects, token generation, and JWT authentication to simulate a successful token validation scenario. The test
 verifies that when a valid token is provided, the system responds with the expected user data and new tokens.
 
-### Test User Verification No Token
+### Test User Verification No Token (10 minutes)
 
 When building authentication systems, it's crucial to handle cases where users attempt to access protected resources
 without providing any authentication token. Here's how we test this scenario:
@@ -135,7 +135,7 @@ request without setting any authorization headers, which should trigger the auth
 request. We verify that the system responds with a 401 Unauthorized status code, indicating that authentication is
 required to access the resource.
 
-### Test User Verification Invalid Token
+### Test User Verification Invalid Token (15 minutes)
 
 Testing invalid token scenarios helps ensure the system's security integrity:
 
@@ -151,7 +151,7 @@ This test simulates attempts to access protected resources using invalid tokens.
 token in the request headers and verify that the system properly rejects it. This test is crucial for ensuring the
 system can distinguish between valid and invalid tokens and responds appropriately.
 
-### Test User Registration
+### Test User Registration (30 minutes)
 
 The registration test verifies that new users can successfully create accounts:
 
@@ -200,7 +200,7 @@ This test mocks the user creation process and verifies that the registration end
 registration requests. It checks that the system creates a new user with the provided credentials and returns
 appropriate authentication tokens.
 
-### Test User Login Success
+### Test User Login Success (20 minutes)
 
 Testing successful login scenarios ensures users can authenticate properly:
 
@@ -234,7 +234,7 @@ def test_user_login(self, mock_token_for_user, mock_authenticate):
 This test verifies that users can successfully log in with valid credentials. It mocks the authentication process and
 ensures the system generates and returns the appropriate tokens upon successful authentication.
 
-### Test User Login Invalid Credentials
+### Test User Login Invalid Credentials (15 minutes)
 
 Testing failed login attempts is crucial for security:
 
@@ -260,7 +260,7 @@ def test_user_login_invalid_credentials(self, mock_authenticate):
 This final test ensures the system properly handles invalid login attempts. It verifies that when incorrect credentials
 are provided, the system responds with an appropriate error message and unauthorized status code.
 
-### Summary
+### Summary (10 minutes)
 
 This comprehensive test suite demonstrates best practices for testing Django authentication systems. By using Mockito
 and Django's testing framework, we've created isolated tests that verify various authentication scenarios without
