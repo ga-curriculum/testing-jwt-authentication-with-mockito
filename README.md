@@ -46,7 +46,11 @@ Let's dive into implementing our authentication tests:
 First, we'll need our necessary imports:
 
 ```python
-
+from django.urls import reverse
+from rest_framework import status
+from rest_framework.test import APITestCase
+from django.contrib.auth.models import User
+from unittest.mock import patch, MagicMock
 ```
 
 ### Setting Up the Test Environment
@@ -54,7 +58,22 @@ First, we'll need our necessary imports:
 The `setUp` method is crucial as it prepares our test environment before each test case:
 
 ```python
+class AuthTestCase(APITestCase):
+    def setUp(self):
+        self.mock_user = MagicMock(spec=User)
+        self.mock_user.configure_mock(**{
+            'id': 1,
+            'username': 'testuser',
+            'email': 'test@test.com',
+            'is_authenticated': True,
+            'is_active': True,
+            'is_anonymous': False,
+            '__str__': lambda self: 'testuser'
+        })
 
+        self.verification_url = reverse('token_refresh')
+        self.mock_access_token = "mock_access_token_12345"
+        self.mock_refresh_token = "mock_refresh_token_67890"
 ```
 
 This `setUp` method initializes our test environment before each test case. We create a mock `User` object with
@@ -67,7 +86,31 @@ also set up verification URLs and mock tokens that will be used across different
 The success verification test ensures that authenticated users can successfully validate their tokens:
 
 ```python
+@patch('django.contrib.auth.models.User.objects')
+@patch('rest_framework_simplejwt.tokens.RefreshToken.for_user')
+@patch('rest_framework_simplejwt.authentication.JWTAuthentication.get_validated_token')
+@patch('rest_framework_simplejwt.authentication.JWTAuthentication.get_user')
+def test_user_verification_success(self, mock_get_user, mock_get_validated_token,
+                                   mock_token_for_user, mock_user_objects):
+    """Test user verification with a mocked valid access token."""
 
+    mock_get_validated_token.return_value = MagicMock()
+    mock_get_user.return_value = self.mock_user
+    mock_user_objects.get.return_value = self.mock_user
+
+    mock_token = MagicMock()
+    mock_token.access_token = self.mock_access_token
+    mock_token.__str__.return_value = self.mock_refresh_token
+    mock_token_for_user.return_value = mock_token
+
+    self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.mock_access_token}')
+    response = self.client.get(self.verification_url)
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertIn('access', response.data)
+    self.assertIn('refresh', response.data)
+    self.assertIn('user', response.data)
+    self.assertEqual(response.data['user']['username'], 'testuser')
 ```
 
 This test method uses multiple patch decorators to mock various components of the authentication system. We mock the
@@ -80,7 +123,10 @@ When building authentication systems, it's crucial to handle cases where users a
 without providing any authentication token. Here's how we test this scenario:
 
 ```python
-
+def test_user_verification_no_token(self):
+    """Test user verification without authentication."""
+    response = self.client.get(self.verification_url)
+    self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 ```
 
 In this test, we simulate a scenario where a client attempts to access the token refresh endpoint without providing any
@@ -94,7 +140,11 @@ required to access the resource.
 Testing invalid token scenarios helps ensure the system's security integrity:
 
 ```python
-
+def test_user_verification_invalid_token(self):
+    """Test user verification with invalid token."""
+    self.client.credentials(HTTP_AUTHORIZATION='Bearer invalid_token')
+    response = self.client.get(self.verification_url)
+    self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
 ```
 
 This test simulates attempts to access protected resources using invalid tokens. We explicitly set an invalid Bearer
@@ -106,7 +156,44 @@ system can distinguish between valid and invalid tokens and responds appropriate
 The registration test verifies that new users can successfully create accounts:
 
 ```python
- 
+@patch('main_app.views.User.objects.create_user')
+@patch('rest_framework_simplejwt.tokens.RefreshToken.for_user')
+@patch('main_app.views.User.objects.get')
+def test_user_registration(self, mock_user_get, mock_token_for_user, mock_create_user):
+    """Test user registration with mocked user creation."""
+    url = reverse('register')
+    data = {
+        'username': 'newuser',
+        'email': 'newuser@test.com',
+        'password': 'newpassword123'
+    }
+
+    new_mock_user = MagicMock(spec=User)
+    new_mock_user.configure_mock(**{
+        'id': 2,
+        'username': data['username'],
+        'email': data['email'],
+        'is_authenticated': True,
+        'is_active': True,
+        'is_anonymous': False,
+        '__str__': lambda self: data['username']
+    })
+
+    mock_create_user.return_value = new_mock_user
+    mock_user_get.return_value = new_mock_user
+
+    mock_token = MagicMock()
+    mock_token.access_token = self.mock_access_token
+    mock_token.__str__.return_value = self.mock_refresh_token
+    mock_token_for_user.return_value = mock_token
+
+    response = self.client.post(url, data)
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertIn('access', response.data)
+    self.assertIn('refresh', response.data)
+    self.assertIn('user', response.data)
+    self.assertEqual(response.data['user']['username'], 'newuser') 
 ```
 
 This test mocks the user creation process and verifies that the registration endpoint correctly handles new user
@@ -118,7 +205,30 @@ appropriate authentication tokens.
 Testing successful login scenarios ensures users can authenticate properly:
 
 ```python
+@patch('main_app.views.authenticate')
+@patch('rest_framework_simplejwt.tokens.RefreshToken.for_user')
+def test_user_login(self, mock_token_for_user, mock_authenticate):
+    """Test user login with mocked authentication."""
+    url = reverse('login')
+    data = {
+        'username': 'testuser',
+        'password': 'securepassword123'
+    }
 
+    mock_authenticate.return_value = self.mock_user
+
+    mock_token = MagicMock()
+    mock_token.access_token = self.mock_access_token
+    mock_token.__str__.return_value = self.mock_refresh_token
+    mock_token_for_user.return_value = mock_token
+
+    response = self.client.post(url, data)
+
+    self.assertEqual(response.status_code, status.HTTP_200_OK)
+    self.assertIn('access', response.data)
+    self.assertIn('refresh', response.data)
+    self.assertIn('user', response.data)
+    self.assertEqual(response.data['user']['username'], 'testuser')
 ```
 
 This test verifies that users can successfully log in with valid credentials. It mocks the authentication process and
@@ -129,7 +239,22 @@ ensures the system generates and returns the appropriate tokens upon successful 
 Testing failed login attempts is crucial for security:
 
 ```python
+@patch('main_app.views.authenticate')
+def test_user_login_invalid_credentials(self, mock_authenticate):
+    """Test user login with mocked failed authentication."""
+    url = reverse('login')
+    data = {
+        'username': 'testuser',
+        'password': 'wrongpassword'
+    }
 
+    mock_authenticate.return_value = None
+
+    response = self.client.post(url, data)
+
+    self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
+    self.assertIn('error', response.data)
+    self.assertEqual(response.data['error'], 'Invalid Credentials')
 ```
 
 This final test ensures the system properly handles invalid login attempts. It verifies that when incorrect credentials
