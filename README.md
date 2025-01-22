@@ -2,9 +2,9 @@
 
 | Title                                      | Type   | Duration | Author               |
 |--------------------------------------------|--------|----------|----------------------|
-| Testing Django Authentication with Mockito | Lesson | 3:00     | Suresh Melvin Sigera |
+| Testing Django Authentication with Mockito | Lesson | 3:30     | Suresh Melvin Sigera |
 
-### Setting Up the Testing Environment (10 minutes)
+### Setting Up the Python Environment (10 minutes)
 
 Before diving into the authentication testing implementation, we need to properly configure our development environment.
 In Django development, isolating project dependencies is crucial for maintaining consistent test environments. We'll
@@ -23,27 +23,33 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
-### Understanding Mockito and Unit Testing in Django (10 minutes)
+### Understanding Mockito and Unit Testing in Django (30 minutes)
 
-In Django applications, testing authentication and user management systems is crucial but can be complex due to external
-dependencies and security considerations. This lesson focuses on using Mockito, a powerful mocking framework, to create
-isolated unit tests for authentication-related functionality.
-Let's create comprehensive tests in the `main_app/tests/mock/test_auth.py` file to ensure our authentication system
-works as expected.
+In Django applications, testing authentication and user management systems is crucial but can be complex due to external dependencies and security considerations. Before diving into our implementation, let's understand the importance of Mockito and how it enhances our testing capabilities.
 
-### The Power of Mockito in Testing (10 minutes)
+### Understanding Mockito
 
-Mockito is a mocking framework that allows us to create mock objects for our tests. When testing authentication systems,
-we often need to isolate our tests from external dependencies like databases or third-party services. Mockito helps us
-achieve this by:
+Mockito is a popular mocking framework that revolutionizes how we approach unit testing. At its core, Mockito allows us to create substitute objects (mocks) that simulate the behavior of real objects in a controlled way. This is particularly valuable when testing authentication systems because:
 
-1. Creating mock objects that simulate real objects' behavior
-2. Controlling the behavior of these mock objects
-3. Verifying that mock objects are used correctly in our tests
+- Database Independence: Instead of relying on actual database connections and user records, we can mock these interactions, making our tests faster and more reliable.
+- Security Testing: We can simulate various security scenarios (valid tokens, invalid tokens, expired sessions) without compromising real security measures.
+- Dependency Isolation: Authentication often involves multiple interconnected services (token generation, user verification, permission checking). Mockito lets us test these components in isolation.
+- Controlled Testing Environment: We can precisely control the behavior of external services and dependencies, making our tests deterministic and reproducible.
 
-Let's dive into implementing our authentication tests:
+### The Role of `main_app/tests/mock/test_auth.py`
 
-First, we'll need our necessary imports:
+In our Django application, we'll be creating our authentication tests in `main_app/tests/mock/test_auth.py`. This file location follows Django's best practices for organizing test files:
+
+- `main_app/ -` Our main application directory
+- `tests/` - Segregates test files from application code
+- `mock/` - Specifically for tests using mock objects
+- `test_auth.py` - Focuses on authentication-related tests
+
+This organization helps maintain a clear separation between different types of tests and makes it easier for other developers to locate and understand our testing strategy.
+
+### Setting Up Our Test Environment
+
+Before writing our tests, we need to ensure our testing environment is properly configured. Here's what we'll need:
 
 ```python
 from django.urls import reverse
@@ -52,6 +58,91 @@ from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from unittest.mock import patch, MagicMock
 ```
+
+These imports provide:
+
+- `reverse`: For generating URLs for our API endpoints
+- `status`: For HTTP status codes
+- `APITestCase`: Django REST framework's test case class
+- `User`: Django's built-in user model
+- `patch` and `MagicMock`: Core components of Mockito for creating and managing mocks
+
+### Testing Strategy
+
+Our authentication testing strategy will cover several critical areas:
+
+- Token Verification: Ensuring our system correctly validates authentication tokens
+- User Registration: Testing the user creation process
+- Login Authentication: Verifying credential validation
+- Error Handling: Testing system responses to invalid inputs
+- Security Measures: Ensuring proper protection against unauthorized access
+
+This comprehensive approach helps ensure our authentication system remains secure and reliable while being maintainable and testable.
+
+### Best Practices for Authentication Testing
+
+When working with Mockito for authentication testing, we follow these best practices:
+
+1. Isolated Tests: Each test should focus on a single aspect of authentication
+2. Consistent Mocking: Use consistent mock objects across related tests
+3. Security-First: Always include tests for security edge cases
+4. Comprehensive Coverage: Test both success and failure scenarios
+
+By following these practices, we create a robust test suite that helps maintain the security and reliability of our authentication system.
+
+
+### File Structure and Organization
+
+We'll organize our `test_auth.py` file into logical sections:
+
+```python
+class AuthTestCase(APITestCase):
+    # Setup methods
+    def setUp(self):
+        # Initialize mock objects and common test data
+        pass
+        
+    # Token verification tests
+    def test_user_verification_success(self):
+        # Test successful token verification
+        pass
+        
+    def test_user_verification_no_token(self):
+        # Test missing token scenarios
+        pass
+        
+    # Registration tests
+    def test_user_registration(self):
+        # Test user registration process
+        pass
+        
+    # Login tests
+    def test_user_login(self):
+        # Test login functionality
+        pass
+```
+
+
+This organization helps maintain clarity and makes it easier to add new tests as our authentication system evolves.
+
+### Testing Goals
+
+Our authentication tests aim to verify:
+
+1. User Management:
+   - Successful user registration
+   - Proper handling of duplicate registrations
+   - User data validation
+2. Authentication:
+   - Login with valid credentials
+   - Rejection of invalid credentials
+   - Token generation and validation
+3. Security:
+   - Protection against unauthorized access
+   - Proper handling of invalid tokens
+
+By thoroughly testing these aspects, we ensure our authentication system remains robust and secure.
+
 
 ### Setting Up the Test Environment (15 minutes)
 
