@@ -356,7 +356,7 @@ are provided, the system responds with an appropriate error message and unauthor
 To execute our test suite:
 
 ```text
-python manage.py test main_app.tests -v 2
+python manage.py test main_app.tests.mock.test_auth -v 2
 ```
 
 This command runs our authentication tests with verbose output, providing detailed information about each test's
