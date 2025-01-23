@@ -351,6 +351,18 @@ def test_user_login_invalid_credentials(self, mock_authenticate):
 This final test ensures the system properly handles invalid login attempts. It verifies that when incorrect credentials
 are provided, the system responds with an appropriate error message and unauthorized status code.
 
+### Running the Tests (5 minutes)
+
+To execute our test suite:
+
+```text
+python manage.py test main_app.tests -v 2
+```
+
+This command runs our authentication tests with verbose output, providing detailed information about each test's
+execution and results. The `-v 2` flag enables verbose output, which is valuable for debugging and understanding test
+behavior.
+
 ### Summary (10 minutes)
 
 This comprehensive test suite demonstrates best practices for testing Django authentication systems. By using Mockito
